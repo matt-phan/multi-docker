@@ -33,7 +33,7 @@ jobs:
         run: docker build -t ${{ secrets.DOCKER_ID }}/multi-server ./server
       - name: build worker image
         run: docker build -t ${{ secrets.DOCKER_ID }}/multi-worker ./worker
-  publish-to-docker hub:
+  publish-to-dockerhub:
     needs: build production images
     runs-on: ubuntu-latest
     steps:
