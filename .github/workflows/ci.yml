@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push: # runs with a push to any branch
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build client dev image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: build client image
+        run: docker build -t ${{ secrets.DOCKER_ID }}/react-test -f ./client/Dockerfile.dev ./client
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: run client tests
+        run: docker run -e CI=true ${{ secrets.DOCKER_ID }}/react-test npm test
+  build production images:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: build client image
+        run: docker build -t ${{ secrets.DOCKER_ID }}/multi-client ./client
+      - name: build nginx image
+        run: docker build -t ${{ secrets.DOCKER_ID }}/multi-nginx ./nginx
+      - name: build server image
+        run: docker build -t ${{ secrets.DOCKER_ID }}/multi-server ./server
+      - name: build worker image
+        run: docker build -t ${{ secrets.DOCKER_ID }}/multi-worker ./worker
+  publish to docker hub:
+    needs: build production images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: login to docker cli
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_ID }}" --password-std
+      - name: push client image to docker hub
+        run: docker push ${{ secrets.DOCKER_ID }}/multi-client
+      - name: push nginx image to docker hub
+        run: docker push ${{ secrets.DOCKER_ID }}/multi-nginx
+      - name: push server image to docker hub
+        run: docker push ${{ secrets.DOCKER_ID }}/multi-server
+      - name: push worker image to docker hub
+        run: docker push ${{ secrets.DOCKER_ID }}/multi-worker
