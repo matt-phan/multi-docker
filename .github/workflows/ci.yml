@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  build client dev image:
+  build-client-dev-image:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: run client tests
         run: docker run -e CI=true ${{ secrets.DOCKER_ID }}/react-test npm test
-  build production images:
+  build-production-images:
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -33,7 +33,7 @@ jobs:
         run: docker build -t ${{ secrets.DOCKER_ID }}/multi-server ./server
       - name: build worker image
         run: docker build -t ${{ secrets.DOCKER_ID }}/multi-worker ./worker
-  publish to docker hub:
+  publish-to-docker hub:
     needs: build production images
     runs-on: ubuntu-latest
     steps:
