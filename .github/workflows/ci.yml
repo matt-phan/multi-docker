@@ -29,7 +29,7 @@ jobs:
       - name: build worker image
         run: docker build -t ${{ secrets.DOCKER_ID }}/multi-worker ./worker
       - name: login to docker cli
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_ID }}" --password-std
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_ID }}" --password-stdin
       - name: push client image to docker hub
         run: docker push ${{ secrets.DOCKER_ID }}/multi-client
       - name: push nginx image to docker hub
