@@ -7,20 +7,15 @@ on:
       - main
 
 jobs:
-  build-client-dev-image:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: build client image
         run: docker build -t ${{ secrets.DOCKER_ID }}/react-test -f ./client/Dockerfile.dev ./client
-  test:
-    needs: build-client-dev-image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
       - name: run client tests
         run: docker run -e CI=true ${{ secrets.DOCKER_ID }}/react-test npm test
-  build-production-images:
+  publish:
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -33,11 +28,6 @@ jobs:
         run: docker build -t ${{ secrets.DOCKER_ID }}/multi-server ./server
       - name: build worker image
         run: docker build -t ${{ secrets.DOCKER_ID }}/multi-worker ./worker
-  publish-to-dockerhub:
-    needs: build-production-images
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
       - name: login to docker cli
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_ID }}" --password-std
       - name: push client image to docker hub
